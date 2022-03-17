@@ -4,7 +4,7 @@
  本 Web 框架便是基于 net/http 实现的。
  * @Author: Tjg
  * @Date: 2022-03-15 21:36:29
- * @LastEditTime: 2022-03-16 22:24:51
+ * @LastEditTime: 2022-03-17 22:28:20
  * @LastEditors: Please set LastEditors
 */
 package my_web_frame
@@ -28,7 +28,7 @@ func New() *Engine {
 	return &Engine{router: newRouter()}
 }
 
-// addRoute 将路由映射的处理方法注册到router
+// addRoute 调用router的方法，将路由函数注册到router
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
 	engine.router.addRoute(method, pattern, handler)
 }

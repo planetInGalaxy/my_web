@@ -2,7 +2,7 @@
  * @Description:
  * @Author: Tjg
  * @Date: 2022-03-16 21:52:51
- * @LastEditTime: 2022-03-16 22:02:55
+ * @LastEditTime: 2022-03-17 22:45:15
  * @LastEditors: Please set LastEditors
  */
 package my_web_frame
@@ -24,6 +24,8 @@ type Context struct {
 	// request info
 	Path   string
 	Method string
+	// 提供对动态路由中的参数的访问
+	Params map[string]string
 	// response info
 	StatusCode int
 }
@@ -38,12 +40,18 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	}
 }
 
+// 获取url中路径参数
+func (c *Context) Param(key string) string {
+	value, _ := c.Params[key]
+	return value
+}
+
 // 获取表单参数
 func (c *Context) PostForm(key string) string {
 	return c.Req.FormValue(key)
 }
 
-// 获取URL参数
+// 获取URL查询参数
 func (c *Context) Query(key string) string {
 	return c.Req.URL.Query().Get(key)
 }

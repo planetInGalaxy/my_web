@@ -2,7 +2,7 @@
  * @Description:
  * @Author: Tjg
  * @Date: 2022-03-15 21:36:41
- * @LastEditTime: 2022-03-16 22:25:16
+ * @LastEditTime: 2022-03-17 23:00:07
  * @LastEditors: Please set LastEditors
  */
 package main
@@ -15,21 +15,23 @@ import (
 
 func main() {
 	r := my_web_frame.New()
-
 	r.GET("/", func(c *my_web_frame.Context) {
-		// 打印URL路径
-		c.HTML(http.StatusOK, "<h1>Hello World!</h1>")
+		c.HTML(http.StatusOK, "<h1>Hello my_web_frame</h1>")
 	})
 
 	r.GET("/hello", func(c *my_web_frame.Context) {
-		// expect /hello?name=xxx
+		// expect /hello?name=planet
 		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
-	r.POST("/login", func(c *my_web_frame.Context) {
-		c.JSON(http.StatusOK, my_web_frame.H{
-			"username": c.PostForm("username"),
-			"password": c.PostForm("password"),
-		})
+
+	r.GET("/hello/:name/123", func(c *my_web_frame.Context) {
+		// expect /hello/planet
+		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
 	})
-	r.Run("localhost:9999")
+
+	r.GET("/assets/*filepath", func(c *my_web_frame.Context) {
+		c.JSON(http.StatusOK, my_web_frame.H{"filepath": c.Param("filepath")})
+	})
+
+	r.Run(":9999")
 }
