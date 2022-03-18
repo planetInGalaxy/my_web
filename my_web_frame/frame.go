@@ -1,7 +1,7 @@
 /*
  * @Description:
- Go语言内置了net/http库，封装了HTTP网络编程的基础的接口，
- 本 Web 框架便是基于 net/http 实现的。
+ 我们实现分组控制，将具有相同前缀的路由划分为一组，以相同的方式来处理它们。
+ 中间件可以实现一些扩展方法，将不同的中间件应用到不同的分组上，就可以实现按需扩展。
  * @Author: Tjg
  * @Date: 2022-03-15 21:36:29
  * @LastEditTime: 2022-03-17 22:28:20
@@ -11,6 +11,7 @@ package my_web_frame
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -19,28 +20,59 @@ type HandlerFunc func(*Context)
 
 // Engine 一个实现了 ServeHTTP 的接口
 type Engine struct {
-	// 添加路由器
-	router *router
+	// 指针继承（嵌入）RouterGroup
+	*RouterGroup                // 根群组
+	router       *router        // 路由器
+	groups       []*RouterGroup // store all groups
+}
+
+// 分组
+type RouterGroup struct {
+	// 以组合的方式添加Engine
+	engine      *Engine // all groups share a Engine instance
+	prefix      string
+	middlewares []HandlerFunc // support middleware
+	parent      *RouterGroup  // support nesting
+
 }
 
 // New 是Engine接口的构造函数
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	engine := &Engine{router: newRouter()}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup}
+	return engine
+}
+
+// Group is defined to create a new RouterGroup
+// remember all groups share the same Engine instance
+// 可以实现嵌套分组
+func (group *RouterGroup) Group(prefix string) *RouterGroup {
+	engine := group.engine
+	newGroup := &RouterGroup{
+		prefix: group.prefix + prefix,
+		parent: group,
+		engine: engine,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return newGroup
 }
 
 // addRoute 调用router的方法，将路由函数注册到router
-func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
-	engine.router.addRoute(method, pattern, handler)
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := group.prefix + comp
+	log.Printf("Route %4s - %s", method, pattern)
+	group.engine.router.addRoute(method, pattern, handler)
 }
 
 // GET 添加GET请求处理方法
-func (engine *Engine) GET(pattern string, handler HandlerFunc) {
-	engine.addRoute("GET", pattern, handler)
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	group.addRoute("GET", pattern, handler)
 }
 
 // POST 添加POST请求处理方法
-func (engine *Engine) POST(pattern string, handler HandlerFunc) {
-	engine.addRoute("POST", pattern, handler)
+func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+	group.addRoute("POST", pattern, handler)
 }
 
 // ServeHTTP 是必须实现的方法，
