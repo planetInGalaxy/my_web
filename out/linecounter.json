@@ -1,0 +1,117 @@
+{
+    "extension": "linecounter",
+    "version": "0.2.7",
+    "workspace": "/Users/tangjiaguo/code/Notebook/项目/my_web",
+    "linecount": [
+        {
+            "version": "0.2.7",
+            "counttime": "2022-03-18 17:16:34",
+            "filesum": 13,
+            "codesum": 596,
+            "commentsum": 163,
+            "blanksum": 144,
+            "statistics": {
+                "": {
+                    "code": 231,
+                    "comment": 3,
+                    "blank": 50
+                },
+                ".md": {
+                    "code": 2,
+                    "comment": 0,
+                    "blank": 0
+                },
+                ".go": {
+                    "code": 357,
+                    "comment": 160,
+                    "blank": 90
+                },
+                ".mod": {
+                    "code": 6,
+                    "comment": 0,
+                    "blank": 4
+                }
+            },
+            "filelist": [
+                {
+                    "blank": 3,
+                    "code": 12,
+                    "comment": 0,
+                    "filename": ".gitignore"
+                },
+                {
+                    "blank": 3,
+                    "code": 4,
+                    "comment": 0,
+                    "filename": "go.mod"
+                },
+                {
+                    "blank": 47,
+                    "code": 219,
+                    "comment": 3,
+                    "filename": "LICENSE"
+                },
+                {
+                    "blank": 13,
+                    "code": 23,
+                    "comment": 14,
+                    "filename": "main.go"
+                },
+                {
+                    "blank": 18,
+                    "code": 72,
+                    "comment": 32,
+                    "filename": "my_web_frame/context.go"
+                },
+                {
+                    "blank": 17,
+                    "code": 62,
+                    "comment": 46,
+                    "filename": "my_web_frame/frame.go"
+                },
+                {
+                    "blank": 11,
+                    "code": 34,
+                    "comment": 8,
+                    "filename": "my_web_frame/frame_test.go"
+                },
+                {
+                    "blank": 1,
+                    "code": 2,
+                    "comment": 0,
+                    "filename": "my_web_frame/go.mod"
+                },
+                {
+                    "blank": 5,
+                    "code": 10,
+                    "comment": 6,
+                    "filename": "my_web_frame/logger.go"
+                },
+                {
+                    "blank": 14,
+                    "code": 72,
+                    "comment": 27,
+                    "filename": "my_web_frame/router.go"
+                },
+                {
+                    "blank": 10,
+                    "code": 73,
+                    "comment": 27,
+                    "filename": "my_web_frame/trie.go"
+                },
+                {
+                    "blank": 2,
+                    "code": 11,
+                    "comment": 0,
+                    "filename": "my_web_frame/util.go"
+                },
+                {
+                    "blank": 0,
+                    "code": 2,
+                    "comment": 0,
+                    "filename": "README.md"
+                }
+            ]
+        }
+    ]
+}

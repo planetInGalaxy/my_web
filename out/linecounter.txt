@@ -1,0 +1,33 @@
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.7
+-------------------------------------------------------------------------------
+count time : 2022-03-18 17:16:34
+count workspace : /Users/tangjiaguo/code/Notebook/项目/my_web
+total files : 13
+total code lines : 596
+total comment lines : 163
+total blank lines : 144
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |               |            231|              3|             50|     39|
+   |            .md|              2|              0|              0|   0.34|
+   |            .go|            357|            160|             90|     60|
+   |           .mod|              6|              0|              4|    1.0|
+   -------------------------------------------------------------------------
+.gitignore, code is 12, comment is 0, blank is 3.
+go.mod, code is 4, comment is 0, blank is 3.
+LICENSE, code is 219, comment is 3, blank is 47.
+main.go, code is 23, comment is 14, blank is 13.
+my_web_frame/context.go, code is 72, comment is 32, blank is 18.
+my_web_frame/frame.go, code is 62, comment is 46, blank is 17.
+my_web_frame/frame_test.go, code is 34, comment is 8, blank is 11.
+my_web_frame/go.mod, code is 2, comment is 0, blank is 1.
+my_web_frame/logger.go, code is 10, comment is 6, blank is 5.
+my_web_frame/router.go, code is 72, comment is 27, blank is 14.
+my_web_frame/trie.go, code is 73, comment is 27, blank is 10.
+my_web_frame/util.go, code is 11, comment is 0, blank is 2.
+README.md, code is 2, comment is 0, blank is 0.
+===============================================================================

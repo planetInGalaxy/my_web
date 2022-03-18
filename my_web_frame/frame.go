@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // HandlerFunc 用来定义路由映射的处理方法
@@ -75,12 +76,28 @@ func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
 	group.addRoute("POST", pattern, handler)
 }
 
+// Use is defined to add middleware to the group
+// 中间件的定义与路由映射的 Handler 一致，处理的输入是Context对象。插入点是框架接收到请求初始化Context对象后，
+// 允许用户使用自己定义的中间件做一些额外的处理，例如记录日志等，
+// 以及对Context进行二次加工。
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
+}
+
 // ServeHTTP 是必须实现的方法，
 // 来自客户端的每个请求都会调用该方法进行进一步处理。它现在的功能是，
+// 根据其所在的群组，按序添加相应的中间件和handler，
 // 将请求和响应接口封装为上下文接口，并且调用router结构体实现路由解析，
 // 找到注册在相应url的函数，进行调用处理。
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlewares []HandlerFunc
+	for _, group := range engine.groups {
+		if strings.HasPrefix(req.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	c := newContext(w, req)
+	c.handlers = middlewares
 	engine.router.handle(c)
 }
 

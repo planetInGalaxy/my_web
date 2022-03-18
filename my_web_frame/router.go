@@ -100,8 +100,14 @@ func (r *router) handle(c *Context) {
 	if node != nil {
 		c.Params = params
 		key := c.Method + "-" + node.pattern
-		r.handlers[key](c)
+		// 将从路由匹配得到的 Handler 添加到 c.handlers列表中，再执行c.Next()
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
-		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		})
 	}
+	// 不再直接执行c.router映射的中的handle方法，
+	// 而是使用Next，统一执行handler函数和中间件
+	c.Next()
 }

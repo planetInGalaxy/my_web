@@ -28,6 +28,9 @@ type Context struct {
 	Params map[string]string
 	// response info
 	StatusCode int
+	// middleware
+	handlers []HandlerFunc
+	index    int
 }
 
 // 上下文结构体构造函数
@@ -37,7 +40,27 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1, // 记录执行流程
 	}
+}
+
+// 按顺序执行index以后的所有handler函数或中间件
+// c.handlers是这样的[A, B, Handler]，
+// c.index初始化为-1，调用c.Next()，流程为：
+// part1 -> part3 -> Handler -> part 4 -> part2
+func (c *Context) Next() {
+	// 每次调用Next，流程直接都向后推进
+	c.index++
+	for ; c.index < len(c.handlers); c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+// 处理handlers失败的情况
+func (c *Context) Fail(code int, err string) {
+	// 直接跳过handlers中所有的中间件和handler
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }
 
 // 获取url中路径参数
