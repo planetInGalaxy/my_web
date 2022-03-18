@@ -64,5 +64,7 @@ func (engine *Engine) Run(addr string) {
 	// 传入一个实现了 ServeHTTP 接口的实例，所有的HTTP请求，
 	// 都会交给该实例进行处理。
 	fmt.Println("Server started on", addr)
+	engine.router.roots["GET"].printAll()
+	fmt.Println(engine.router.handlers)
 	http.ListenAndServe(addr, engine)
 }

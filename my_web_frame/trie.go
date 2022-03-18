@@ -30,7 +30,7 @@ type node struct {
 // 第一个匹配成功的节点，用于插入
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
-		if child.part == part || child.isWild {
+		if child.part == part /*|| child.isWild */ {
 			return child
 		}
 	}
@@ -59,7 +59,26 @@ func (n *node) insert(pattern string, parts []string, height int) {
 	child := n.matchChild(part)
 	if child == nil {
 		child = &node{part: part, isWild: part[0] == ':' || part[0] == '*'}
-		n.children = append(n.children, child)
+		// 实现优先精确匹配
+		if part[0] == '*' {
+			n.children = append(n.children, child)
+		} else if part[0] == ':' {
+			length := len(n.children)
+			if length > 0 && n.children[length-1].part[0] == '*' {
+				n.children = append(n.children[:length-1], append([]*node{child}, n.children[length-1])...)
+			} else {
+				n.children = append(n.children, child)
+			}
+		} else {
+			length := len(n.children)
+			if length > 1 && n.children[length-2].part[0] == ':' && n.children[length-1].part[0] == '*' {
+				n.children = append(n.children[:length-2], append([]*node{child}, n.children[length-2:]...)...)
+			} else if length > 0 && (n.children[length-1].part[0] == ':' || n.children[length-1].part[0] == '*') {
+				n.children = append(n.children[:length-1], append([]*node{child}, n.children[length-1])...)
+			} else {
+				n.children = append(n.children, child)
+			}
+		}
 	}
 	child.insert(pattern, parts, height+1)
 }
