@@ -2,7 +2,7 @@
  * @Description:
  * @Author: Tjg
  * @Date: 2022-03-16 21:52:51
- * @LastEditTime: 2022-03-17 22:45:15
+ * @LastEditTime: 2022-03-20 20:47:09
  * @LastEditors: Please set LastEditors
  */
 package my_web_frame
@@ -31,6 +31,9 @@ type Context struct {
 	// middleware
 	handlers []HandlerFunc
 	index    int
+	// engine pointer
+	// 模板渲染中需要使用engine.htmlTemplates中注册的模板文件
+	engine *Engine
 }
 
 // 上下文结构体构造函数
@@ -118,4 +121,16 @@ func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
+}
+
+// 指定模板类型和数据进行渲染
+// refer https://golang.org/pkg/html/template/
+func (c *Context) Render(code int, name string, data interface{}) {
+	c.SetHeader("Content-Type", "text/html")
+	c.Status(code)
+	println("before")
+	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
+		c.Fail(500, err.Error())
+	}
+	println("after")
 }

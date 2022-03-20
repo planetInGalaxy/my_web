@@ -1,18 +1,22 @@
 /*
  * @Description:
- 我们实现分组控制，将具有相同前缀的路由划分为一组，以相同的方式来处理它们。
- 中间件可以实现一些扩展方法，将不同的中间件应用到不同的分组上，就可以实现按需扩展。
+text/template和html/template2个模板标准库，
+其中html/template为 HTML 提供了较为完整的支持。
+包括普通变量渲染、列表渲染、对象渲染等。
+本框架的模板渲染直接使用了html/template提供的能力。
  * @Author: Tjg
  * @Date: 2022-03-15 21:36:29
- * @LastEditTime: 2022-03-17 22:28:20
+ * @LastEditTime: 2022-03-20 21:06:59
  * @LastEditors: Please set LastEditors
 */
 package my_web_frame
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -22,9 +26,12 @@ type HandlerFunc func(*Context)
 // Engine 一个实现了 ServeHTTP 的接口
 type Engine struct {
 	// 指针继承（嵌入）RouterGroup
-	*RouterGroup                // 根群组
-	router       *router        // 路由器
-	groups       []*RouterGroup // store all groups
+	*RouterGroup                     // 根群组
+	router        *router            // 路由器
+	groups        []*RouterGroup     // store all groups
+	htmlTemplates *template.Template // 将所有的模板加载进内存
+	funcMap       template.FuncMap   // 保存所有的自定义模板渲染函数
+	/*type template.FuncMap map[string]any*/
 }
 
 // 分组
@@ -59,6 +66,14 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	return newGroup
 }
 
+// Use is defined to add middleware to the group
+// 中间件的定义与路由映射的 Handler 一致，处理的输入是Context对象。插入点是框架接收到请求初始化Context对象后，
+// 允许用户使用自己定义的中间件做一些额外的处理，例如记录日志等，
+// 以及对Context进行二次加工。
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
+}
+
 // addRoute 调用router的方法，将路由函数注册到router
 func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern := group.prefix + comp
@@ -76,12 +91,37 @@ func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
 	group.addRoute("POST", pattern, handler)
 }
 
-// Use is defined to add middleware to the group
-// 中间件的定义与路由映射的 Handler 一致，处理的输入是Context对象。插入点是框架接收到请求初始化Context对象后，
-// 允许用户使用自己定义的中间件做一些额外的处理，例如记录日志等，
-// 以及对Context进行二次加工。
-func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
-	group.middlewares = append(group.middlewares, middlewares...)
+// create static handler
+func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
+	absolutePath := path.Join(group.prefix, relativePath)
+	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
+	return func(c *Context) {
+		file := c.Param("filepath")
+		// Check if file exists and/or if we have permission to access it
+		if _, err := fs.Open(file); err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		fileServer.ServeHTTP(c.Writer, c.Req)
+	}
+}
+
+// serve static files
+func (group *RouterGroup) Static(relativePath string, root string) {
+	handler := group.createStaticHandler(relativePath, http.Dir(root))
+	urlPattern := path.Join(relativePath, "/*filepath")
+	// Register GET handlers
+	group.GET(urlPattern, handler)
+}
+
+// for custom render function
+func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
+	engine.funcMap = funcMap
+}
+
+func (engine *Engine) LoadHTMLGlob(pattern string) {
+	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
 }
 
 // ServeHTTP 是必须实现的方法，
@@ -98,6 +138,8 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	c := newContext(w, req)
 	c.handlers = middlewares
+	// 添加engine
+	c.engine = engine
 	engine.router.handle(c)
 }
 
